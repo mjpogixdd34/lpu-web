@@ -1,0 +1,521 @@
+import Section from "@/components/section"
+import { Button } from "@/components/ui/button"
+
+type CTA = { label: string; href: string; variant?: "default" | "outline" }
+
+export default function Hero({
+  title = "Shaping futures with excellence and heart",
+  subtitle = "Discover programs, research, and student services designed to help you thrive.",
+  ctas = [
+    { label: "Apply", href: "/admissions/apply" },
+    { label: "Explore Programs", href: "/academics", variant: "outline" },
+  ],
+  image = "/university-aerial-warm.png",
+}: {
+  title?: string
+  subtitle?: string
+  ctas?: CTA[]
+  image?: string
+}) {
+  return (
+    <div className="relative">
+      <img
+        src={image || "/placeholder.svg"}
+        alt="University campus hero"
+        className="h-[48vh] w-full object-cover object-center sm:h-[58vh] lg:h-[66vh]"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" aria-hidden />
+      <div className="absolute inset-0">
+        <Section className="h-full" containerClassName="h-full">
+          <div className="flex h-full items-end">
+            <div className="max-w-2xl rounded-md bg-white/90 p-5 shadow backdrop-blur">
+              <h1 className="text-balance text-3xl font-bold leading-tight text-amber-900 sm:text-4xl">{title}</h1>
+              <p className="mt-2 text-pretty text-sm leading-relaxed text-neutral-700 sm:text-base">{subtitle}</p>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                {ctas.map((cta) => (
+                  <Button
+                    key={cta.href}
+                    asChild
+                    variant={cta.variant ?? "default"}
+                    className={cta.variant === "outline" ? "" : "bg-amber-700 text-amber-50 hover:bg-amber-800"}
+                  >
+                    <a href={cta.href}>{cta.label}</a>
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Section>
+      </div>
+    </div>
+  )
+}
+
+"use client"
+
+import { useState } from "react"
+import SiteShell from "@/components/site-shell"
+import PageHeader from "@/components/page-header"
+import Section from "@/components/section"
+import { Button } from "@/components/ui/button"
+import { InputField, TextareaField } from "@/components/forms/field"
+
+export default function Page() {
+  const [values, setValues] = useState({ name: "", email: "", message: "" })
+  const [errors, setErrors] = useState<{ [k: string]: string }>({})
+  function validate() {
+    const e: { [k: string]: string } = {}
+    if (!values.name) e.name = "Please enter your full name."
+    if (!values.email || !/^\S+@\S+\.\S+$/.test(values.email)) e.email = "Please provide a valid email address."
+    if (!values.message || values.message.length < 10) e.message = "Please include at least 10 characters."
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+  function submit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!validate()) return
+    alert("Thanks! We received your message.")
+    setValues({ name: "", email: "", message: "" })
+  }
+  return (
+    <SiteShell>
+      <Section>
+        <PageHeader
+          eyebrow="Support"
+          title="Contact Us"
+          description="We’d love to hear from you. Fill out the form and we’ll get back to you shortly."
+        />
+        <form className="mx-auto mt-6 max-w-xl space-y-3 rounded-lg border bg-white p-4 sm:p-6" onSubmit={submit} noValidate>
+          <InputField
+            label="Full Name"
+            name="name"
+            value={values.name}
+            onChange={(e) => setValues((v) => ({ ...v, name: e.target.value }))}
+            placeholder="Alex Student"
+            autoComplete="name"
+            required
+            help="Enter the name we should address in our reply."
+            error={errors.name}
+          />
+          <InputField
+            label="Email"
+            name="email"
+            type="email"
+            value={values.email}
+            onChange={(e) => setValues((v) => ({ ...v, email: e.target.value }))}
+            placeholder="you@demo.lpu.edu"
+            autoComplete="email"
+            required
+            help="We’ll only use this to contact you about your inquiry."
+            error={errors.email}
+          />
+          <TextareaField
+            label="Message"
+            name="message"
+            value={values.message}
+            onChange={(e) => setValues((v) => ({ ...v, message: e.target.value }))}
+            placeholder="How can we help?"
+            required
+            help="Include details to help us route your message."
+            error={errors.message}
+            rows={6}
+          />
+          <Button type="submit" className="w-full bg-amber-700 text-amber-50 hover:bg-amber-800 sm:w-auto">Send Message</Button>
+        </form>
+      </Section>
+    </SiteShell>
+  )
+}
+
+"use client"
+
+import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import SiteShell from "@/components/site-shell"
+import PageHeader from "@/components/page-header"
+import Section from "@/components/section"
+import { useAuth } from "@/components/auth-provider"
+import { Button } from "@/components/ui/button"
+import { InputField } from "@/components/forms/field"
+import Link from "next/link"
+
+export default function Page() {
+  const { login } = useAuth()
+  const router = useRouter()
+  const params = useSearchParams()
+  const next = params.get("next") || "/student/dashboard"
+
+  const [email, setEmail] = useState("student@demo.lpu.edu")
+  const [password, setPassword] = useState("Password123")
+  const [error, setError] = useState<string | null>(null)
+  const [pending, setPending] = useState(false)
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setPending(true)
+    const res = await login(email, password)
+    setPending(false)
+    if (!res.ok) {
+      setError(res.error || "Login failed")
+      return
+    }
+    router.push(next)
+  }
+
+  return (
+    <SiteShell>
+      <Section>
+        <PageHeader
+          eyebrow="Student Account"
+          title="Sign in to your account"
+          description="Use the seeded demo account or your newly registered credentials."
+        />
+        <form className="mx-auto mt-6 max-w-md space-y-3 rounded-lg border bg-white p-4 sm:p-6" onSubmit={onSubmit}>
+          <InputField
+            label="Email"
+            name="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="student@demo.lpu.edu"
+            autoComplete="email"
+            required
+            help="Use your Campus Mail format if you’re an enrolled student."
+          />
+          <InputField
+            label="Password"
+            name="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password"
+            autoComplete="current-password"
+            required
+          />
+          {error && <div className="text-sm text-red-600">{error}</div>}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Button type="submit" disabled={pending} className="bg-amber-700 text-amber-50 hover:bg-amber-800">
+              {pending ? "Signing in..." : "Sign In"}
+            </Button>
+            <div className="text-sm">
+              New here?{" "}
+              <Link href="/auth/register" className="underline">
+                Create an account
+              </Link>
+            </div>
+          </div>
+        </form>
+      </Section>
+    </SiteShell>
+  )
+}
+
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import SiteShell from "@/components/site-shell"
+import PageHeader from "@/components/page-header"
+import Section from "@/components/section"
+import { useAuth } from "@/components/auth-provider"
+import { Button } from "@/components/ui/button"
+import { InputField } from "@/components/forms/field"
+import Link from "next/link"
+
+export default function Page() {
+  const { register } = useAuth()
+  const router = useRouter()
+  const [values, setValues] = useState({ email: "", password: "", firstName: "", lastName: "" })
+  const [error, setError] = useState<string | null>(null)
+  const [pending, setPending] = useState(false)
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setPending(true)
+    const res = await register(values)
+    setPending(false)
+    if (!res.ok) {
+      setError(res.error || "Registration failed")
+      return
+    }
+    router.push("/student/dashboard")
+  }
+
+  return (
+    <SiteShell>
+      <Section>
+        <PageHeader
+          eyebrow="Student Account"
+          title="Create your account"
+          description="Use your name and a valid email. You’ll be signed in automatically after registration."
+        />
+        <form className="mx-auto mt-6 max-w-md space-y-3 rounded-lg border bg-white p-4 sm:p-6" onSubmit={onSubmit}>
+          <InputField label="First Name" name="firstName" value={values.firstName} onChange={(e) => setValues((v) => ({ ...v, firstName: e.target.value }))} placeholder="Alex" required />
+          <InputField label="Last Name" name="lastName" value={values.lastName} onChange={(e) => setValues((v) => ({ ...v, lastName: e.target.value }))} placeholder="Student" required />
+          <InputField label="Email" name="email" type="email" value={values.email} onChange={(e) => setValues((v) => ({ ...v, email: e.target.value }))} placeholder="you@demo.lpu.edu" autoComplete="email" required />
+          <InputField label="Password" name="password" type="password" value={values.password} onChange={(e) => setValues((v) => ({ ...v, password: e.target.value }))} placeholder="Minimum 8 characters" autoComplete="new-password" required help="Use a strong password combining letters, numbers, and symbols." />
+          {error && <div className="text-sm text-red-600">{error}</div>}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Button type="submit" disabled={pending} className="bg-amber-700 text-amber-50 hover:bg-amber-800">
+              {pending ? "Creating..." : "Create Account"}
+            </Button>
+            <div className="text-sm">
+              Already have an account?{" "}
+              <Link href="/auth/login" className="underline">
+                Sign in
+              </Link>
+            </div>
+          </div>
+        </form>
+      </Section>
+    </SiteShell>
+  )
+}
+
+"use client"
+
+import { useState } from "react"
+import SiteShell from "@/components/site-shell"
+import BottomCTA from "@/components/bottom-cta"
+import PageHeader from "@/components/page-header"
+import Section from "@/components/section"
+import { Button } from "@/components/ui/button"
+import { InputField } from "@/components/forms/field"
+
+export default function Page() {
+  const [values, setValues] = useState({ email: "", first: "", last: "" })
+  const [errors, setErrors] = useState<{ [k: string]: string }>({})
+
+  function validate() {
+    const e: { [k: string]: string } = {}
+    if (!values.first) e.first = "First name is required."
+    if (!values.last) e.last = "Last name is required."
+    if (!values.email || !/\S+@\S+\.\S+$/.test(values.email)) e.email = "Enter a valid email address."
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!validate()) return
+    alert("Your pre-application was captured. Proceed to myLPU portal to complete.")
+    window.location.href = "/systems/mylpu"
+  }
+
+  return (
+    <SiteShell>
+      <Section>
+        <PageHeader
+          eyebrow="Admissions"
+          title="Apply to LPU"
+          description="You can start online and return anytime. Download forms if you prefer offline submission."
+          actions={[{ label: "Download Form (PDF)", href: "/docs/admissions-application.pdf", variant: "outline" }]}
+        />
+        <div className="mt-6 grid gap-8 xl:grid-cols-[1fr_380px]">
+          <div>
+            <div id="requirements" className="rounded-lg border bg-white p-4">
+              <h2 className="text-lg font-semibold text-amber-900">Admission Requirements</h2>
+              <ul className="mt-2 list-inside list-disc text-sm leading-relaxed text-muted-foreground">
+                <li>Completed application form</li>
+                <li>Secondary/tertiary transcripts</li>
+                <li>Valid government-issued ID</li>
+                <li>Program-specific prerequisites</li>
+              </ul>
+            </div>
+
+            <div className="mt-6 rounded-lg border bg-white p-4">
+              <h2 className="text-lg font-semibold">Start Online Application</h2>
+              <form className="mt-3 grid gap-3" onSubmit={submit} noValidate>
+                <InputField
+                  label="First Name"
+                  name="first"
+                  value={values.first}
+                  onChange={(e) => setValues((v) => ({ ...v, first: e.target.value }))}
+                  autoComplete="given-name"
+                  required
+                  help="As displayed on your ID/passport."
+                  error={errors.first}
+                />
+                <InputField
+                  label="Last Name"
+                  name="last"
+                  value={values.last}
+                  onChange={(e) => setValues((v) => ({ ...v, last: e.target.value }))}
+                  autoComplete="family-name"
+                  required
+                  help="Surname/family name."
+                  error={errors.last}
+                />
+                <InputField
+                  label="Email"
+                  name="email"
+                  type="email"
+                  value={values.email}
+                  onChange={(e) => setValues((v) => ({ ...v, email: e.target.value }))}
+                  autoComplete="email"
+                  required
+                  help="We’ll send your application link and updates here."
+                  error={errors.email}
+                />
+                <div className="pt-2">
+                  <Button type="submit" className="w-full bg-amber-700 text-amber-50 hover:bg-amber-800 md:w-auto">Proceed to Application Portal</Button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <aside className="h-max rounded-lg border bg-amber-50 p-4">
+            <h2 className="text-sm font-semibold text-amber-900">External Systems Gateway</h2>
+            <ol className="mt-2 list-inside list-decimal text-sm">
+              <li><a className="underline" href="/systems/mylpu">myLPU LMS</a> — complete application and track status.</li>
+              <li><a className="underline" href="/systems/campus-mail">Campus Mail</a> — receive official messages.</li>
+              <li><a className="underline" href="/library/opac">Library OPAC</a> — access digital resources.</li>
+            </ol>
+            <div id="downloads" className="mt-4">
+              <div className="text-sm font-semibold">Downloads</div>
+              <ul className="mt-1 text-sm">
+                <li><a className="underline" href="/docs/program-brochure.pdf" download>Program Brochure (PDF)</a></li>
+                <li><a className="underline" href="/docs/admissions-application.pdf" download>Application Form (PDF)</a></li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </Section>
+      <BottomCTA label="Apply Now" href="/admissions/apply" />
+    </SiteShell>
+  )
+}
+
+"use client"
+
+import { useState } from "react"
+import SiteShell from "@/components/site-shell"
+import PageHeader from "@/components/page-header"
+import Section from "@/components/section"
+import { Button } from "@/components/ui/button"
+import { InputField } from "@/components/forms/field"
+import { CheckCircle2, Loader2 } from 'lucide-react'
+
+export default function Page() {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [step, setStep] = useState<"idle" | "handoff" | "done">("idle")
+
+  function login(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email || !password) return
+    setStep("handoff")
+    setTimeout(() => setStep("done"), 1200)
+  }
+
+  return (
+    <SiteShell>
+      <Section>
+        <PageHeader
+          eyebrow="Systems"
+          title="myLPU LMS"
+          description="Use your Campus Mail credentials to sign in. After authentication, identity handoff connects you to Teams, OneDrive, and course tools."
+        />
+        <div className="mt-6 grid gap-8 xl:grid-cols-[1fr_420px]">
+          <div className="rounded-lg border bg-white p-4">
+            <h2 className="text-lg font-semibold">Sign In</h2>
+            <form className="mt-3 grid gap-3" onSubmit={login}>
+              <InputField label="Campus Mail (Microsoft 365)" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="firstname.lastname@demo.lpu.edu" required help="Your institutional email address." />
+              <InputField label="Password" name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
+              <Button type="submit" className="bg-amber-700 text-amber-50 hover:bg-amber-800" disabled={step !== "idle"}>
+                {step === "idle" && "Login"}
+                {step === "handoff" && (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Redirecting to Microsoft 365...
+                  </span>
+                )}
+                {step === "done" && (
+                  <span className="inline-flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4" /> Signed in
+                  </span>
+                )}
+              </Button>
+            </form>
+          </div>
+
+          <aside className="h-max rounded-lg border bg-amber-50 p-4">
+            <h2 className="text-sm font-semibold text-amber-900">After Sign-In</h2>
+            <ul className="mt-2 list-inside list-disc text-sm text-muted-foreground">
+              <li>Identity handoff connects your session to Teams and OneDrive.</li>
+              <li>Course shells and assignments sync automatically.</li>
+              <li>Access records (grades, attendance) from the Dashboard.</li>
+            </ul>
+            <div className="mt-3">
+              <a className="underline mr-2" href="/systems/teams">Open Teams</a>
+              <a className="underline mr-2" href="/systems/onedrive">Open OneDrive</a>
+              <a className="underline" href="/lms">Open LMS Dashboard</a>
+            </div>
+          </aside>
+        </div>
+      </Section>
+    </SiteShell>
+  )
+}
+
+"use client"
+
+import { useMemo, useState } from "react"
+import { getCourse } from "@/lib/lms-mock"
+import { Button } from "@/components/ui/button"
+import { InputField, TextareaField } from "@/components/forms/field"
+
+export default function Page({ params }: { params: { id: string; aid: string } }) {
+  const c = getCourse(params.id)
+  const a = useMemo(() => c?.assignments.find(x => x.id === params.aid), [c, params.aid])
+  const [filename, setFilename] = useState("")
+  const [comments, setComments] = useState("")
+  const [submitted, setSubmitted] = useState(false)
+
+  if (!c || !a) return <div className="text-sm text-muted-foreground">Assignment not found.</div>
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!filename.trim()) return
+    setSubmitted(true)
+    alert("Submission received (mock).")
+  }
+
+  return (
+    <article className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+      <div className="rounded-lg border bg-white p-4">
+        <h1 className="text-lg font-semibold">{a.title}</h1>
+        <div className="text-xs text-muted-foreground">Due: {new Date(a.due).toLocaleString()} • {a.points} pts</div>
+        <p className="mt-2 text-sm text-muted-foreground">{a.instructions}</p>
+        <form className="mt-4 grid gap-3" onSubmit={submit}>
+          <InputField
+            label="File Name (mock upload)"
+            name="file"
+            value={filename}
+            onChange={(e) => setFilename(e.target.value)}
+            placeholder="lab1-alex-student.zip"
+            required
+            help="Include your name and assignment number in the filename."
+          />
+          <TextareaField
+            label="Comments"
+            name="comments"
+            value={comments}
+            onChange={(e) => setComments(e.target.value)}
+            placeholder="Any notes for the grader"
+            rows={4}
+            help="Optional: provide context for your submission."
+          />
+          <Button type="submit" disabled={submitted} className="bg-amber-700 text-amber-50 hover:bg-amber-800">
+            {submitted ? "Submitted" : "Submit Assignment"}
+          </Button>
+        </form>
+      </div>
+      <aside className="h-max rounded-lg border bg-amber-50 p-4 text-sm">
+        <div className="font-semibold text-amber-900">Resources</div>
+        <ul className="mt-2 list-inside list-disc text-muted-foreground">
+          <li><a className="underline" href="/docs/cs101-lab1.pdf" download>Lab 1 Brief (PDF)</a></li>
+          <li><a className="underline" href={`/lms/courses/${c.id}/modules`}>Related Module</a></li>
+        </ul>
+      </aside>
+    </article>
+  )
+}
