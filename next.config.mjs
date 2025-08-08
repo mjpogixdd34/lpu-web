@@ -8,7 +8,10 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    domains: ['lighthousepolytechnicuniversity.netlify.app'],
   },
+  output: 'standalone',
+  distDir: '.next',
 }
 
 export default nextConfig
