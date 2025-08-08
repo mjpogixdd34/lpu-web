@@ -1,13 +1,15 @@
 import type { Metadata } from 'next'
-import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from "@/components/auth-provider"
 
+const inter = Inter({ subsets: ['latin'] })
+
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: 'Lighthouse Polytechnic University',
+  description: 'A warm, research-driven institution for 21st-century learners',
+  authors: [{ name: 'LPU' }],
+  keywords: ['university', 'education', 'polytechnic', 'research', 'learning'],
 }
 
 export default function RootLayout({
@@ -17,16 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <style>{`
-html {
-  font-family: ${GeistSans.style.fontFamily};
-  --font-sans: ${GeistSans.variable};
-  --font-mono: ${GeistMono.variable};
-}
-        `}</style>
-      </head>
-      <body>
+      <body className={inter.className}>
         <AuthProvider>
           {children}
         </AuthProvider>
