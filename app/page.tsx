@@ -1,14 +1,8 @@
-import type { Metadata } from 'next'
 import SiteShell from "@/components/site-shell"
 import Hero from "@/components/hero"
 import CardGrid from "@/components/card-grid"
 import UtilityLinks from "@/components/utility-links"
 import { COLLEGES, NEWS } from "@/lib/mock-data"
-
-export const metadata: Metadata = {
-  title: 'Home | Lighthouse Polytechnic University',
-  description: 'Welcome to Lighthouse Polytechnic University - A warm, research-driven institution for 21st-century learners',
-}
 
 export default function Page() {
   const colleges = COLLEGES.map(c => ({

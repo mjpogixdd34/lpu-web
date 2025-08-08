@@ -24,7 +24,9 @@
     "path": "/_next/image",
     "loader": "default",
     "loaderFile": "",
-    "domains": [],
+    "domains": [
+      "lighthousepolytechnicuniversity.netlify.app"
+    ],
     "disableStaticImages": false,
     "minimumCacheTTL": 60,
     "formats": [
